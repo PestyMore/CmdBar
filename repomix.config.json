@@ -1,0 +1,49 @@
+{
+  "$schema": "https://raw.githubusercontent.com/rec-AI/Repomix/main/repomix.schema.json",
+  "purpose": "此配置文件旨在为 AI 提供一个关于 'CmdBar' 应用的核心逻辑教学包。它专注于 Tauri 后端如何执行系统命令，以及 Vue 前端如何进行状态管理、组件化和与后端交互，同时排除了所有标准的项目配置文件和样板代码。",
+  "include": [
+    // 关键文件1：Tauri 窗口配置。定义了应用无边框、透明的浮动窗口外观。
+    "src-tauri/tauri.conf.json",
+
+    // 关键文件2：Rust 后端核心。提供了 `run_command` 这个核心的 invoke 方法。
+    "src-tauri/src/lib.rs",
+
+    // 关键文件3：Vue 应用根组件。负责整体布局和设置全局透明样式。
+    "src/App.vue",
+
+    // 关键文件4：核心业务组件。这是应用的心脏，管理命令列表、状态、调用后端，并使用其他子组件。
+    "src/components/CmdBar.vue",
+
+    // 关键文件5：自定义标题栏组件。提供了必要的窗口控制功能。
+    "src/components/MacTitleBar.vue",
+    
+    // 关键文件6：功能性 UI 组件。这是命令增删改查（CRUD）操作的界面。
+    "src/components/AddEditCmdModal.vue"
+  ],
+  "file_order": [
+    "src-tauri/tauri.conf.json",
+    "src-tauri/src/lib.rs",
+    "src/App.vue",
+    "src/components/MacTitleBar.vue",
+    "src/components/CmdBar.vue",
+    "src/components/AddEditCmdModal.vue"
+  ],
+  "final_instructions": {
+    "title": "给 AI 的项目核心逻辑摘要：CmdBar 应用",
+    "content": [
+      "你好，请分析以下文件，它们是一个名为 'CmdBar' 的 Tauri+Vue 应用的核心实现。这个应用的目的是提供一个可以快速执行预设命令行脚本的界面。",
+      "核心逻辑分布在以下几个关键文件中：",
+      "1. **窗口定义 (`src-tauri/tauri.conf.json`)**: 这是应用的视觉基础。注意 `decorations: false` 和 `transparent: true`，它们创建了一个无边框的悬浮窗口。",
+      "2. **后端能力 (`src-tauri/src/lib.rs`)**: 后端非常简单，只提供了一个核心 tauri 命令 `run_command`。它的作用是接收命令和参数，并在操作系统中执行它。",
+      "3. **前端布局 (`src/App.vue` & `src/components/MacTitleBar.vue`)**: `App.vue` 设置了全局透明背景和整体布局。`MacTitleBar.vue` 则为这个无边框窗口提供了必要的关闭、最小化、最大化控件。",
+      "4. **前端核心 (`src/components/CmdBar.vue`)**: 这是业务逻辑的中心。它负责：",
+      "   - 使用 `ref` 维护一个命令列表 (`cmds`)。",
+      "   - 在 `onMounted` 时从 `localStorage` 加载数据，并在数据变更时写回，实现数据持久化。",
+      "   - 提供UI来展示命令列表，并处理运行、编辑、删除等操作。",
+      "   - **最重要的交互**：当用户点击“运行”时，它会调用 `invoke('run_command', ...)`，将任务派发给 Rust 后端。",
+      "   - 管理 `AddEditCmdModal` 模态框的显示和状态。",
+      "5. **数据操作界面 (`src/components/AddEditCmdModal.vue`)**: 这是一个纯粹的 UI 表单组件，用于添加新命令或编辑现有命令。它通过 `props` 和 `emits` 与父组件 `CmdBar.vue` 进行通信。",
+      "请在理解上述结构后，等待我的进一步指令。"
+    ]
+  }
+}
