@@ -89,29 +89,29 @@ const deleteCmd = async (id: number) => {
 .cmd-container { display: flex; flex-direction: column; flex: 1; padding: 0 24px; overflow: hidden; }
 .header { display: flex; justify-content: space-between; align-items: center; padding: 10px 0 20px; flex-shrink: 0; }
 .title { font-size: 28px; font-weight: 700; margin: 0; letter-spacing: -0.5px; }
-.add-btn { width: 32px; height: 32px; border-radius: 50%; background: rgba(255, 255, 255, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; backdrop-filter: blur(10px); }
+.add-btn { width: 32px; height: 32px; border-radius: 50%; background: rgba(228, 60, 68, 0.15); border: 1px solid rgba(255, 255, 255, 0.2); color: white; display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s;  }
 .add-btn:hover { background: rgba(255, 255, 255, 0.25); transform: scale(1.05); } .add-btn:active { transform: scale(0.95); } .add-btn svg { width: 18px; height: 18px; }
 .list-area { flex: 1; overflow-y: auto; padding-bottom: 24px; } .list-area::-webkit-scrollbar { width: 0; }
 .empty-state { text-align: center; margin-top: 50px; color: rgba(255, 255, 255, 0.5); font-size: 15px; }
 .list { display: grid; grid-template-columns: repeat(2, 1fr); gap: 16px; }
-.cmd-item { display: flex; align-items: center; background: rgba(255, 255, 255, 0.08); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px 18px; transition: all 0.2s; backdrop-filter: blur(10px); cursor: pointer; }
-.cmd-item:hover { background: rgba(255, 255, 255, 0.15); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
+.cmd-item { display: flex; align-items: center; background: rgba(228, 60, 68, 0.05); border: 1px solid rgba(255, 255, 255, 0.1); border-radius: 12px; padding: 14px 18px; transition: all 0.2s;  cursor: pointer; }
+.cmd-item:hover { background: rgba(228, 60, 68, 0.15); transform: translateY(-2px); box-shadow: 0 4px 12px rgba(0,0,0,0.15); }
 .info { flex: 1; overflow: hidden; }
 .name { font-size: 16px; font-weight: 600; margin-bottom: 4px; color: #fff; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
 .path { font-size: 12px; color: rgba(255, 255, 255, 0.6); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; font-family: monospace; }
 .actions { display: flex; gap: 8px; margin-left: 12px; }
 .icon-btn { width: 30px; height: 30px; border-radius: 8px; background: rgba(255, 255, 255, 0.1); border: none; color: rgba(255, 255, 255, 0.8); display: flex; align-items: center; justify-content: center; cursor: pointer; transition: all 0.2s; }
 .icon-btn svg { width: 14px; height: 14px; }
-.edit-btn:hover { background: #007AFF; color: white; } .del-btn:hover { background: #FF3B30; color: white; }
-.dialog-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.4); backdrop-filter: blur(8px); display: flex; align-items: center; justify-content: center; z-index: 1000; }
-.dialog-card { width: 300px; background: rgba(40, 40, 40, 0.85); backdrop-filter: blur(25px) saturate(200%); border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; overflow: hidden; }
+.edit-btn:hover { background: #E43C44; color: white; } .del-btn:hover { background: #FF3B30; color: white; }
+.dialog-backdrop { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0, 0, 0, 0.7);  display: flex; align-items: center; justify-content: center; z-index: 1000; }
+.dialog-card { width: 300px; background: #180305;  border: 1px solid rgba(255, 255, 255, 0.15); border-radius: 16px; box-shadow: 0 20px 40px rgba(0,0,0,0.3); text-align: center; overflow: hidden; }
 .dialog-title { margin: 20px 20px 8px; font-size: 17px; font-weight: 600; color: white; }
 .dialog-message { margin: 0 20px 20px; font-size: 14px; color: rgba(255, 255, 255, 0.7); line-height: 1.4; white-space: pre-wrap; word-break: break-all; }
 .dialog-actions { display: flex; border-top: 1px solid rgba(255, 255, 255, 0.1); }
 .dialog-actions.single .dialog-btn { width: 100%; }
 .dialog-btn { flex: 1; padding: 14px 0; background: transparent; border: none; font-size: 16px; cursor: pointer; transition: background 0.2s; }
 .dialog-btn.cancel { color: rgba(255, 255, 255, 0.9); border-right: 1px solid rgba(255, 255, 255, 0.1); font-weight: 400; }
-.dialog-btn.confirm { color: #0A84FF; font-weight: 600; }
+.dialog-btn.confirm { color: #E43C44; font-weight: 600; }
 .dialog-btn:hover { background: rgba(255, 255, 255, 0.05); } .dialog-btn:active { background: rgba(255, 255, 255, 0.1); }
 .fade-enter-active, .fade-leave-active { transition: opacity 0.2s ease; } .fade-enter-from, .fade-leave-to { opacity: 0; }
 </style>
