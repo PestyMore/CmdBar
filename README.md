@@ -1,3 +1,18 @@
+## CmdBar v1.1.0 更新日志 (Changelog)
+
+本次更新为一次重大重构，核心目标是极致的性能优化与核心体验的完善。
+
+### 🚀 新增功能 (Features)
+- **开机自启 (Autostart):** 安装后，程序首次运行会自动注册到系统启动项。
+- **静默启动 (Silent Startup):** 程序启动时将自动最小化至任务栏，不打扰用户当前工作。
+
+### ✨ 优化与改进 (Improvements & Optimizations)
+- **极致性能优化 (Performance Overhaul):** 彻底移除了消耗资源的毛玻璃特效（`blur`）与背景图片，应用启动和响应速度得到质的飞跃。
+- **全新 Alastor 主题 (New Alastor Theme):** 采用高性能的 CSS 渐变背景，重塑了 UI 的色彩风格，参考自 Alastor 的暗红与黑配色。
+- **命令项点击体验优化 (Improved Click Area):** 增大了命令列表项的有效点击区域，现在只要鼠标悬浮的区域均可触发运行。
+- **新增 Esc 键隐藏窗口 (Minimize with Esc key):** 在窗口激活时，按下 `Esc` 键可快速将窗口最小化。
+
+
 # CmdBar
 
 🍏 **Windows ”快速命令启动器**

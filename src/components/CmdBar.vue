@@ -57,8 +57,8 @@ const deleteCmd = async (id: number) => {
     <div class="list-area">
       <div v-if="!cmds.length" class="empty-state"><p>暂无命令，点击右上角 "+" 添加</p></div>
       <div class="list" v-else>
-        <div v-for="cmd in cmds" :key="cmd.id" class="cmd-item">
-          <div class="info" @click="runCmd(cmd)">
+        <div v-for="cmd in cmds" :key="cmd.id" class="cmd-item" @click="runCmd(cmd)">
+          <div class="info">
             <div class="name">{{ cmd.name }}</div>
             <div class="path">{{ cmd.path }}</div>
           </div>

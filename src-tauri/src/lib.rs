@@ -7,11 +7,15 @@ use tauri::Manager;
 #[cfg_attr(mobile, tauri::mobile_entry_point)]
 pub fn run() {
     tauri::Builder::default()
-        .plugin(tauri_plugin_global_shortcut::Builder::new().build())
-        .plugin(tauri_plugin_autostart::Builder::new().build())
+        // 注册开机自启插件
+        .plugin(tauri_plugin_autostart::init(
+            tauri_plugin_autostart::MacosLauncher::LaunchAgent,
+            Some(vec![]),
+        ))
         .setup(|app| {
             let window = app.get_webview_window("main").unwrap();
             let _ = window.set_background_color(Some(Color(0, 0, 0, 0)));
+            // 静默启动逻辑：先显示注册任务栏，随后立刻最小化
             let _ = window.show();
             let _ = window.minimize();
             Ok(())

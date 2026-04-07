@@ -3,35 +3,30 @@ import MacTitleBar from "./components/MacTitleBar.vue";
 import CmdBar from "./components/CmdBar.vue";
 import { onMounted, onUnmounted } from 'vue';
 import { getCurrentWindow } from '@tauri-apps/api/window';
-import { register } from '@tauri-apps/plugin-global-shortcut';
+import { enable, isEnabled } from '@tauri-apps/plugin-autostart';
 
 const appWindow = getCurrentWindow();
 
-const setupWindowLogic = async () => {
+// 保留开机自启逻辑
+const setupAutostart = async () => {
   try {
-    // 注册全局快捷键 Alt+Space 唤出/隐藏
-    await register('Alt+Space', async () => {
-      const isMinimized = await appWindow.isMinimized();
-      if (isMinimized) {
-        await appWindow.unminimize();
-        await appWindow.setFocus();
-      } else {
-        await appWindow.minimize();
-      }
-    });
-  } catch (err) { console.warn('快捷键注册失败:', err); }
+    if (!(await isEnabled())) {
+      await enable();
+    }
+  } catch (err) { console.error("自启配置异常:", err); }
 };
 
+// 仅保留 Esc 键最小化
 const handleKeydown = async (e: KeyboardEvent) => {
-  // Ctrl+W 或是 Esc 键，最小化窗口
-  if (((e.key === 'w' || e.key === 'W') && (e.ctrlKey || e.metaKey)) || e.key === 'Escape') {
+  if (e.key === 'Escape') {
     e.preventDefault();
     await appWindow.minimize();
   }
 };
 
 onMounted(() => {
-  setupWindowLogic();
+  setupAutostart();
+  // 恢复最朴素的监听方式，去掉之前画蛇添足的捕获参数
   window.addEventListener('keydown', handleKeydown);
 });
 
@@ -39,12 +34,14 @@ onUnmounted(() => {
   window.removeEventListener('keydown', handleKeydown);
 });
 </script>
+
 <template>
   <div class="window-layout">
-        <MacTitleBar />
+    <MacTitleBar />
     <CmdBar />
   </div>
 </template>
+
 <style>
 :root { font-family: -apple-system, BlinkMacSystemFont, "SF Pro Text", "Segoe UI", Roboto, Helvetica, sans-serif; font-size: 14px; font-weight: 400; color: #ffffff; background-color: transparent !important; }
 body, #app { margin: 0; padding: 0; width: 100vw; height: 100vh; overflow: hidden; background-color: transparent !important; }
