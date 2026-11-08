@@ -1,16 +1,19 @@
-# Node.js 依赖
+# Node.js
 node_modules/
 dist/
 dist-ssr/
 *.local
 
-# Tauri 编译缓存与产物 (绝对不能上传)
+# Tauri 编译产物与生成物
 src-tauri/target/
 src-tauri/gen/
 
-# 编辑器与系统文件
+# 本机代理 / 工具配置，不入库（CI 不使用任何代理）
+.cargo/
 .vscode/
 .idea/
+
+# 编辑器与系统
 *.suo
 *.ntvs*
 *.njsproj
@@ -29,7 +32,3 @@ npm-debug.log*
 yarn-debug.log*
 yarn-error.log*
 pnpm-debug.log*
-
-# 本地数据存储 (如果用到的话)
-*.db
-*.sqlite
