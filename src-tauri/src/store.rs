@@ -6,8 +6,11 @@ use std::time::{SystemTime, UNIX_EPOCH};
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct CommandItem {
+    #[serde(default)]
     pub id: String,
+    #[serde(default)]
     pub name: String,
+    #[serde(default)]
     pub command: String,
     #[serde(default)]
     pub workdir: String,
@@ -21,6 +24,7 @@ pub struct CommandItem {
 
 #[derive(Debug, Serialize, Deserialize)]
 pub struct Store {
+    #[serde(default)]
     pub version: u8,
     #[serde(default)]
     pub commands: Vec<CommandItem>,
@@ -31,6 +35,7 @@ pub struct Store {
 pub struct StorePayload {
     pub commands: Vec<CommandItem>,
     pub data_dir: String,
+    pub warning: Option<String>,
 }
 
 #[derive(Deserialize)]
@@ -76,21 +81,6 @@ pub fn data_dir() -> Result<PathBuf, String> {
     Ok(config_root()?.join("com.cmdbar"))
 }
 
-pub fn read_store() -> Result<Store, String> {
-    let path = data_dir()?.join("commands.json");
-    if !path.exists() {
-        return Ok(Store::default());
-    }
-    let text = fs::read_to_string(&path).map_err(|e| format!("读取数据文件失败：{e}"))?;
-    serde_json::from_str(&text).map_err(|e| {
-        format!(
-            "数据文件 {} 内容损坏（{}），请修正或删除后重试",
-            path.display(),
-            e
-        )
-    })
-}
-
 pub fn write_store(store: &Store) -> Result<(), String> {
     let dir = data_dir()?;
     fs::create_dir_all(&dir).map_err(|e| format!("创建数据目录失败：{e}"))?;
@@ -103,6 +93,46 @@ pub fn write_store(store: &Store) -> Result<(), String> {
         format!("写入数据文件失败：{e}")
     })?;
     Ok(())
+}
+
+/// 手工编辑的 JSON 可能缺字段；读取时补全 id 并去掉首尾空白，避免脏数据导致 UI 异常。
+fn normalize(mut store: Store) -> Store {
+    let timestamp = now_millis();
+    for (index, item) in store.commands.iter_mut().enumerate() {
+        if item.id.trim().is_empty() {
+            item.id = format!("auto-{timestamp}-{index}");
+        }
+        item.name = item.name.trim().to_string();
+        item.command = item.command.trim().to_string();
+        item.workdir = item.workdir.trim().to_string();
+    }
+    store.version = 1;
+    store
+}
+
+/// 返回（数据，警告）。文件损坏时先备份再重建，避免用户直接丢失原文件。
+pub fn read_store() -> Result<(Store, Option<String>), String> {
+    let dir = data_dir()?;
+    let path = dir.join("commands.json");
+    if !path.exists() {
+        return Ok((Store::default(), None));
+    }
+    let text = fs::read_to_string(&path).map_err(|e| format!("读取数据文件失败：{e}"))?;
+    match serde_json::from_str::<Store>(&text) {
+        Ok(store) => Ok((normalize(store), None)),
+        Err(e) => {
+            let backup = dir.join("commands.json.bak");
+            let _ = fs::rename(&path, &backup);
+            let fresh = Store::default();
+            write_store(&fresh)?;
+            Ok((
+                fresh,
+                Some(format!(
+                    "数据文件解析失败（{e}），已备份为 commands.json.bak，命令列表已重置"
+                )),
+            ))
+        }
+    }
 }
 
 /// 首启读取：文件不存在时用旧版 localStorage 数据做一次性迁移。
@@ -140,10 +170,11 @@ pub fn load_store(legacy: Option<String>) -> Result<StorePayload, String> {
         })?;
     }
 
-    let store = read_store()?;
+    let (store, warning) = read_store()?;
     Ok(StorePayload {
         commands: store.commands,
         data_dir: dir.to_string_lossy().into_owned(),
+        warning,
     })
 }
 

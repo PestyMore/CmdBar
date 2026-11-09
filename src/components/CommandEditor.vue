@@ -34,7 +34,7 @@ function submit() {
           <h3>{{ isNew ? "新建命令" : "编辑命令" }}</h3>
           <p>把常用的脚本或程序加进来，随时一键运行</p>
         </div>
-        <button class="icon-btn" type="button" title="关闭" @click="emit('cancel')">
+        <button class="icon-btn" type="button" title="关闭" aria-label="关闭" @click="emit('cancel')">
           <X :size="16" />
         </button>
       </div>

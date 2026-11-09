@@ -11,4 +11,5 @@ export interface CommandItem {
 export interface StorePayload {
   commands: CommandItem[]
   dataDir: string
+  warning: string | null
 }

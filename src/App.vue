@@ -22,6 +22,7 @@ const commands = ref<CommandItem[]>([]);
 const dataDir = ref("");
 const keyword = ref("");
 const loading = ref(true);
+const searchInput = ref<HTMLInputElement | null>(null);
 
 const editorOpen = ref(false);
 const editorIsNew = ref(false);
@@ -74,13 +75,17 @@ function formatLastRun(value: number | null): string {
 }
 
 function onKeydown(event: KeyboardEvent) {
-  if (event.key !== "Escape") return;
-  if (editorOpen.value) {
-    editorOpen.value = false;
-  } else if (deleteOpen.value) {
-    deleteOpen.value = false;
-  } else if (keyword.value) {
-    keyword.value = "";
+  if (event.key === "Escape") {
+    if (editorOpen.value) editorOpen.value = false;
+    else if (deleteOpen.value) deleteOpen.value = false;
+    else if (keyword.value) keyword.value = "";
+    return;
+  }
+  if (event.key === "/" && !editorOpen.value && !deleteOpen.value) {
+    const target = event.target as HTMLElement | null;
+    if (target && (target.tagName === "INPUT" || target.tagName === "TEXTAREA")) return;
+    event.preventDefault();
+    searchInput.value?.focus();
   }
 }
 
@@ -91,6 +96,7 @@ onMounted(async () => {
     commands.value = payload.commands;
     dataDir.value = payload.dataDir;
     if (legacy) localStorage.removeItem("cmdbar-commands");
+    if (payload.warning) notify(payload.warning, "err");
   } catch (error) {
     notify(`读取命令失败：${error}`, "err");
   } finally {
@@ -174,6 +180,7 @@ async function openDataDir() {
 <template>
   <div class="app-shell">
     <div class="window">
+      <div class="accent-line" aria-hidden="true" />
       <MacTitleBar />
 
       <main class="content">
@@ -188,8 +195,15 @@ async function openDataDir() {
           <div class="head-actions">
             <label class="search">
               <Search :size="15" />
-              <input v-model="keyword" type="search" placeholder="搜索名称或命令" aria-label="搜索命令" />
-              <button v-if="keyword" class="clear" title="清空搜索" @click="keyword = ''">
+              <input
+                ref="searchInput"
+                v-model="keyword"
+                type="search"
+                placeholder="搜索名称或命令"
+                aria-label="搜索命令"
+                spellcheck="false"
+              />
+              <button v-if="keyword" class="clear" title="清空搜索" aria-label="清空搜索" @click="keyword = ''">
                 <X :size="13" />
               </button>
             </label>
@@ -203,7 +217,8 @@ async function openDataDir() {
           <div v-else-if="!commands.length" class="empty">
             <div class="empty-icon"><Terminal :size="26" /></div>
             <strong>还没有命令</strong>
-            <span>点击右上角「新建命令」，把常用脚本加进来</span>
+            <span>把常用脚本加进来，之后点一下就能跑</span>
+            <button class="btn btn-primary" @click="openAdd"><Plus :size="15" />新建第一个命令</button>
           </div>
 
           <div v-else-if="!filtered.length" class="empty">
@@ -213,11 +228,20 @@ async function openDataDir() {
           </div>
 
           <div v-else class="grid">
-            <article v-for="item in filtered" :key="item.id" class="cmd-card" @click="run(item)">
+            <article
+              v-for="item in filtered"
+              :key="item.id"
+              class="cmd-card"
+              tabindex="0"
+              :aria-label="'运行 ' + item.name"
+              @click="run(item)"
+              @keydown.enter.prevent="run(item)"
+              @keydown.space.prevent="run(item)"
+            >
               <div class="card-top">
                 <div class="cmd-icon"><Terminal :size="17" /></div>
                 <div class="card-title">
-                  <div class="name">{{ item.name }}</div>
+                  <div class="name" :title="item.name">{{ item.name }}</div>
                   <div class="meta">
                     <span v-if="item.runAsAdmin" class="badge"><ShieldCheck :size="11" />管理员</span>
                     <span class="last">{{ formatLastRun(item.lastRunAt) }}</span>
@@ -229,9 +253,9 @@ async function openDataDir() {
               <div v-if="item.workdir" class="workdir" :title="item.workdir">工作目录 · {{ item.workdir }}</div>
 
               <div class="card-actions">
-                <button class="icon-btn" title="运行" @click.stop="run(item)"><Play :size="14" /></button>
-                <button class="icon-btn" title="编辑" @click.stop="openEdit(item)"><Pencil :size="14" /></button>
-                <button class="icon-btn danger" title="删除" @click.stop="askDelete(item)"><Trash2 :size="14" /></button>
+                <button class="icon-btn" title="运行" aria-label="运行" @click.stop="run(item)"><Play :size="14" /></button>
+                <button class="icon-btn" title="编辑" aria-label="编辑" @click.stop="openEdit(item)"><Pencil :size="14" /></button>
+                <button class="icon-btn danger" title="删除" aria-label="删除" @click.stop="askDelete(item)"><Trash2 :size="14" /></button>
               </div>
             </article>
           </div>
@@ -241,10 +265,10 @@ async function openDataDir() {
           <div class="dir">
             <FolderOpen :size="14" />
             <span class="dir-label">数据目录</span>
-            <span class="dir-path" :title="dataDir">{{ dataDir || "读取中…" }}</span>
+            <span class="dir-path" :title="dataDir">%APPDATA%\com.cmdbar</span>
             <button class="btn btn-ghost open-btn" @click="openDataDir">打开</button>
           </div>
-          <span class="hint">Esc 关闭弹窗 · 支持管理员提权</span>
+          <span class="hint">/ 搜索 · Esc 关闭 · 支持管理员提权</span>
         </footer>
       </main>
 
@@ -258,7 +282,7 @@ async function openDataDir() {
 
       <Transition name="fade">
         <div v-if="deleteOpen" class="overlay" @click.self="deleteOpen = false">
-          <div class="panel confirm">
+          <div class="panel confirm" role="alertdialog" aria-label="确认删除命令">
             <div class="confirm-icon"><CircleAlert :size="20" /></div>
             <h3>删除这条命令？</h3>
             <p>「{{ deleteItem.name }}」将从列表和数据文件中移除，此操作不可撤销。</p>
@@ -271,7 +295,7 @@ async function openDataDir() {
       </Transition>
 
       <Transition name="fade">
-        <div v-if="toast.show" class="toast" :class="toast.kind">
+        <div v-if="toast.show" class="toast" :class="toast.kind" role="status">
           <Check v-if="toast.kind === 'ok'" :size="15" />
           <CircleAlert v-else :size="15" />
           <span>{{ toast.text }}</span>
@@ -283,11 +307,13 @@ async function openDataDir() {
 
 <style scoped>
 .content {
+  position: relative;
+  z-index: 1;
   display: flex;
   flex: 1;
   flex-direction: column;
   min-height: 0;
-  padding: 20px 24px 0;
+  padding: 18px 24px 0;
 }
 
 .page-head {
@@ -296,7 +322,7 @@ async function openDataDir() {
   justify-content: space-between;
   gap: 16px;
   flex: 0 0 auto;
-  padding-bottom: 18px;
+  padding-bottom: 16px;
 }
 
 .head-line {
@@ -344,11 +370,12 @@ async function openDataDir() {
   border-radius: 9px;
   background: var(--surface);
   color: var(--muted);
-  transition: border-color 0.15s ease;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .search:focus-within {
   border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(224, 163, 46, 0.14);
 }
 
 .search input {
@@ -412,6 +439,10 @@ async function openDataDir() {
   font-size: 14px;
 }
 
+.empty .btn {
+  margin-top: 8px;
+}
+
 .empty-icon {
   display: flex;
   align-items: center;
@@ -436,15 +467,15 @@ async function openDataDir() {
   border-radius: 12px;
   background: var(--surface);
   cursor: pointer;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease, box-shadow 0.15s ease;
+  /* 不使用 transform：透明窗口下位移会创建合成层，容易盖住顶部标识线 */
+  transition: background 0.15s ease, border-color 0.15s ease, box-shadow 0.15s ease;
 }
 
 .cmd-card:hover,
-.cmd-card:focus-within {
+.cmd-card:focus-visible {
   border-color: var(--accent);
   background: var(--surface-hover);
-  transform: translateY(-2px);
-  box-shadow: 0 6px 16px rgba(76, 62, 32, 0.1);
+  box-shadow: 0 4px 14px rgba(76, 62, 32, 0.12);
 }
 
 .card-top {
@@ -529,7 +560,7 @@ async function openDataDir() {
   right: 9px;
   display: flex;
   gap: 1px;
-  opacity: 0;
+  opacity: 0.45;
   transition: opacity 0.15s ease;
 }
 
@@ -539,6 +570,8 @@ async function openDataDir() {
 }
 
 .footer {
+  position: relative;
+  z-index: 1;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -562,10 +595,7 @@ async function openDataDir() {
 }
 
 .dir-path {
-  max-width: 330px;
-  overflow: hidden;
   font-family: var(--mono);
-  text-overflow: ellipsis;
   white-space: nowrap;
 }
 

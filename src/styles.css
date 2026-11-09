@@ -46,6 +46,16 @@ input {
 
 button {
   cursor: pointer;
+  user-select: none;
+}
+
+:focus-visible {
+  outline: 2px solid var(--accent-strong);
+  outline-offset: 2px;
+}
+
+input:focus-visible {
+  outline: none;
 }
 
 .app-shell {
@@ -69,11 +79,10 @@ button {
   box-shadow: 0 14px 38px rgba(76, 62, 32, 0.18), 0 2px 6px rgba(76, 62, 32, 0.08);
 }
 
-.window::before {
-  content: "";
-  position: absolute;
-  inset: 0 0 auto 0;
-  z-index: 5;
+/* 顶部琥珀色标识线用正常的 flex 子元素，而不是绝对定位伪元素。
+   这样它参与普通布局，永远不会被 hover 时产生的合成层盖住。 */
+.accent-line {
+  flex: 0 0 3px;
   height: 3px;
   background: var(--accent);
   pointer-events: none;
@@ -93,7 +102,7 @@ button {
   font-size: 13px;
   font-weight: 600;
   white-space: nowrap;
-  transition: background 0.15s ease, border-color 0.15s ease, transform 0.15s ease;
+  transition: background 0.15s ease, border-color 0.15s ease;
 }
 
 .btn:hover {
@@ -102,7 +111,7 @@ button {
 }
 
 .btn:active {
-  transform: translateY(1px);
+  background: var(--accent-soft);
 }
 
 .btn-primary {
@@ -244,4 +253,13 @@ button {
   border: 2px solid var(--bg);
   border-radius: 8px;
   background: var(--border-strong);
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
 }

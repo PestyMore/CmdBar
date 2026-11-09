@@ -8,6 +8,11 @@ dist-ssr/
 src-tauri/target/
 src-tauri/gen/
 
+# 用户数据绝不能入库（真正的存放位置在 %APPDATA%/com.cmdbar）
+commands.json
+commands.json.*
+release-artifacts/
+
 # 本机代理 / 工具配置，不入库（CI 不使用任何代理）
 .cargo/
 .vscode/

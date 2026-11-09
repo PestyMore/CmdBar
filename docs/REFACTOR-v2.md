@@ -209,3 +209,43 @@ cmd.exe /D /S /C "<用户命令行>"
 5. **深色模式与主题切换**：当前配色变量已集中，后续加 `[data-theme]` 成本很低。
 6. **替代实现：完全去掉 Tauri**，用 PowerShell/WPF 或 AutoHotkey 做单文件脚本启动器 —— 体积更小但 UI 与维护性大幅下降，不建议。
 7. **替代实现：Web 前端改为原生 HTML/JS**，去掉 Vue/Vite 依赖，构建产物更小；但状态管理与弹窗会回到手工 DOM 操作，可维护性变差，不划算。
+
+---
+
+## 9. v2.1 增补（实施后复盘）
+
+> 本节覆盖 v2.0 发布后的实测反馈，与上文冲突处以本节为准。详细证据见 [`PRIVACY-AUDIT.md`](PRIVACY-AUDIT.md)。
+
+### 9.1 实测结果
+
+v2.0 已在本地完成 `vue-tsc` / `cargo check` / `cargo fmt --check` / `npx tauri build --bundles nsis` 全链路验证，安装包 1.04 MiB；实机启动确认窗口可见且未最小化、四角圆角与红绿灯正常、旧 `localStorage` 三条命令自动迁移到 Roaming。CI 首轮构建成功并产出可用 artifact。
+
+### 9.2 隐私追问与结论
+
+用户下载 CI 产物后一打开就看到旧命令，怀疑数据被打包进公有仓库。
+
+结论：**没有泄露**。命令数据只在本机 Roaming 目录；仓库 HEAD、全部提交历史、`dist/`、便携 exe 与 NSIS 安装包的 UTF-8/UTF-16/GBK 字节扫描均无命中。原因是数据目录为固定绝对路径，任何构建在同一台机器上都会读同一份文件。CI 只编译不运行应用，runner 上不存在该数据。唯一额外发现是 Git 提交作者邮箱（v1 原始提交中已存在，来自用户本机 git 配置），已在文档里告知，未擅自修改用户 git 配置。
+
+### 9.3 顶部标识线被遮挡的修复
+
+v2.0 用 `.window::before`（绝对定位 + `z-index`）画顶部琥珀线，并让卡片 hover 时 `transform: translateY(-2px)`。透明 WebView2 窗口下，`transform` 会把卡片提升为合成层，容易在重绘时盖住或擦掉位于其他层级的细线。
+
+v2.1 改为两处结构性修复：
+
+- 琥珀线改成 `.window` 的**普通 flex 子元素** `.accent-line`，参与正常布局、不依赖 z-index，从机制上不可能被后代盖住；
+- **移除 hover 的 `transform`**，只用边框色、背景色与 `box-shadow` 表达悬停；同时给标题栏/内容/页脚显式 z-index，堆叠顺序确定。
+
+副作用是避免了合成层抖动，透明窗口的重绘更稳定。
+
+### 9.4 其它 v2.1 决策
+
+| 变更 | 理由 |
+| --- | --- |
+| 底部路径显示为 `%APPDATA%\com.cmdbar`，完整路径仅在 tooltip | 截图外发不泄露 Windows 用户名 |
+| 卡片操作按钮常驻（低透明度），卡片 `Tab` 可聚焦、回车/空格可运行，`/` 聚焦搜索 | 解决"按钮 hover 才出现"的可发现性与键盘可达性 |
+| `prefers-reduced-motion` 支持、全局 `:focus-visible` 轮廓、`aria-label` | 无障碍与减少动效 |
+| 数据文件损坏时改为备份 `commands.json.bak` + 重建 + 返回 warning 提示 | 原来直接报错会诱导用户后续覆盖写，可能丢数据 |
+| 缺省字段自动补全、空 id 自动补齐、首尾空白规范化 | 支持"手工编辑 JSON"这一用法 |
+| `.gitignore` 增加 `commands.json*` 与 `release-artifacts/` | 防止误把数据文件拷进仓库 |
+| CI 增加隐私检查、产物扁平化并显式命名 `CmdBar-portable.exe`、构建失败重试、`concurrency` / `timeout-minutes` | 公有仓库的分发安全与构建鲁棒性 |
+| 文档新增隐私审计、便携版说明、快捷键表 | 直接回答"能不能免安装"和"数据从哪来" |

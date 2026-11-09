@@ -22,6 +22,7 @@ const appWindow = getCurrentWindow();
 <style scoped>
 .titlebar {
   position: relative;
+  z-index: 2;
   display: flex;
   align-items: center;
   flex: 0 0 40px;

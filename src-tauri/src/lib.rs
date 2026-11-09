@@ -19,7 +19,7 @@ fn save_commands(commands: Vec<store::CommandItem>) -> Result<(), String> {
 
 #[tauri::command]
 fn run_command(id: String) -> Result<(), String> {
-    let mut data = store::read_store()?;
+    let (mut data, _) = store::read_store()?;
     let item = data
         .commands
         .iter()
