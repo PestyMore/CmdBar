@@ -514,12 +514,15 @@ async function openDataDir() {
   display: flex;
   align-items: center;
   gap: 6px;
+  min-width: 0;
   margin-top: 3px;
   font-size: 11px;
 }
 
+/* 徽章不能被卡片宽度挤压：不换行、不收缩，让后面的「上次运行」去截断 */
 .badge {
   display: inline-flex;
+  flex: 0 0 auto;
   align-items: center;
   gap: 3px;
   padding: 1px 6px;
@@ -527,10 +530,18 @@ async function openDataDir() {
   background: #f6ead1;
   color: #a9761a;
   font-weight: 600;
+  white-space: nowrap;
+}
+
+.badge svg {
+  flex: 0 0 auto;
 }
 
 .last {
+  overflow: hidden;
   color: var(--muted);
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 
 .cmd-text,
